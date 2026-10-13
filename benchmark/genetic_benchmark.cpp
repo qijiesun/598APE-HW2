@@ -27,6 +27,9 @@
 #include "program.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include "flags.h"
+
+Flags optimizations;
 
 // Utility functions
 namespace utils {
@@ -205,7 +208,7 @@ void insertionSortPrograms(genetic::program *programs, int size) {
   }
 }
 
-void run_symbolic_regression(const std::string &dataset_file) {
+struct timespec run_symbolic_regression(const std::string &dataset_file) {
   std::cout << "\n;;===== Symbolic Regression Benchmark =====\n" << std::endl;
   std::cout << "(provide best-program-1 best-program-2)\n";
   // Initialize ctimer for end-to-end timing
@@ -342,9 +345,10 @@ void run_symbolic_regression(const std::string &dataset_file) {
   ctimer_print(end_to_end_timer, "Symbolic Regression (End-to-End)");
 
   delete[] final_programs;
+	return end_to_end_timer.elapsed;
 }
 
-void run_symbolic_classification(const std::string &dataset_file) {
+struct timespec run_symbolic_classification(const std::string &dataset_file) {
   std::cout << "\n;;===== Symbolic Classification Benchmark =====\n"
             << std::endl;
   std::cout << "(provide best-program-1 best-program-2)\n";
@@ -485,9 +489,10 @@ void run_symbolic_classification(const std::string &dataset_file) {
   ctimer_print(end_to_end_timer, "Symbolic Classification (End-to-End)");
 
   delete[] final_programs;
+	return end_to_end_timer.elapsed;
 }
 
-void run_symbolic_reconstruction(const std::string &png_file, int K) {
+struct timespec run_symbolic_reconstruction(const std::string &png_file, int K) {
   if (K < 1) {
     throw std::invalid_argument("K must be positive");
   }
@@ -654,6 +659,54 @@ void run_symbolic_reconstruction(const std::string &png_file, int K) {
   ctimer_stop(&end_to_end_timer);
   ctimer_measure(&end_to_end_timer);
   ctimer_print(end_to_end_timer, "Symbolic Image Reconstruction (End-to-End)");
+	return end_to_end_timer.elapsed;
+}
+
+void parse_optimization(std::string &optimization) {
+	if (optimization == "default") {
+		return;
+	} else if (optimization == "o1") {
+		optimizations.o1 = true;
+	} else if (optimization == "o2") {
+		optimizations.o2 = true;
+	} else if (optimization == "o3") {
+		optimizations.o3 = true;
+	} else if (optimization == "o4") {
+		optimizations.o4 = true;
+	} else if (optimization == "o5") {
+		optimizations.o5 = true;
+	} else if (optimization == "o6") {
+		optimizations.o6 = true;
+	} else if (optimization == "all") {
+		optimizations.o1 = true;
+	} else {
+		throw std::invalid_argument("Unknown optimization: " + optimization);
+	}
+}
+
+double run_test(std::string &arg_dset) {
+	// Default datasets
+	std::string regression_dataset = "benchmark/diabetes.csv";
+	std::string classification_dataset = "benchmark/cancer.csv";
+	std::string housing_dataset = "benchmark/housing.csv";
+	std::string silk_wave = "benchmark/silk-waves.png";
+	std::string square_wave = "benchmark/squared-waves.png";
+
+	struct timespec elapsed;
+	if (arg_dset == "diabetes") {
+		elapsed = run_symbolic_regression(regression_dataset);
+	} else if (arg_dset == "cancer") {
+		elapsed = run_symbolic_classification(classification_dataset);
+	} else if (arg_dset == "housing") {
+		elapsed = run_symbolic_regression(housing_dataset);
+	} else if (arg_dset == "silk-wave") {
+		elapsed = run_symbolic_reconstruction(silk_wave, 3);
+	} else if (arg_dset == "square-wave") {
+		elapsed = run_symbolic_reconstruction(square_wave, 8);
+	} else {
+		throw std::invalid_argument("Unknown benchmark: " + arg_dset);
+	}
+	return elapsed.tv_sec + elapsed.tv_nsec / 1e9;
 }
 
 int main(int argc, char *argv[]) {
@@ -661,38 +714,22 @@ int main(int argc, char *argv[]) {
     if (argc < 2) {
       throw std::invalid_argument(
           "Usage: genetic_benchmark "
-          "{diabetes|cancer|housing|silk-wave|square-wave}");
+          "{diabetes|cancer|housing|silk-wave|square-wave} [optimization] [runs]");
     }
     std::cout << "#lang racket\n";
-    // Default datasets
-    std::string regression_dataset = "benchmark/diabetes.csv";
-    std::string classification_dataset = "benchmark/cancer.csv";
-    std::string housing_dataset = "benchmark/housing.csv";
-    std::string silk_wave = "benchmark/silk-waves.png";
-    std::string square_wave = "benchmark/squared-waves.png";
 
     std::string arg_dset(argv[1]);
+		std::string test = argv[1];
+		std::string optimization = "default";
+		if (argc > 2) {
+			optimization = argv[2];
+			parse_optimization(optimization);
+		}
 
-    if (arg_dset == "diabetes") {
-      run_symbolic_regression(regression_dataset);
-    } else if (arg_dset == "cancer") {
-      run_symbolic_classification(classification_dataset);
-    } else if (arg_dset == "housing") {
-      run_symbolic_regression(housing_dataset);
-    } else if (arg_dset == "silk-wave") {
-      if (argc != 2) {
-        throw std::invalid_argument("Usage: genetic_benchmark silk-wave");
-      }
-      run_symbolic_reconstruction(silk_wave, 3);
-    } else if (arg_dset == "square-wave") {
-      if (argc != 2) {
-        throw std::invalid_argument("Usage: genetic_benchmark square-wave");
-      }
-      run_symbolic_reconstruction(square_wave, 8);
-
-    } else {
-      throw std::invalid_argument("Unknown benchmark: " + arg_dset);
-    }
+		double elapsed = run_test(test);
+		std::cerr << std::fixed << std::setprecision(9);
+		std::cerr << "--------------------------------------------------" << std::endl;
+		std::cerr << "Time for " << test << ": " << elapsed << " seconds" << std::endl;
 
     return 0;
   } catch (const std::exception &e) {

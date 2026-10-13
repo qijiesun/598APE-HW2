@@ -34,3 +34,9 @@
 compile_commands.json
 .cache/
 genetic_benchmark
+
+# Outputs
+silk.rkt
+square.rkt
+silk.png
+square.png
