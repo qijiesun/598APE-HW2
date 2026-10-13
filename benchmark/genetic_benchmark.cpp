@@ -679,6 +679,7 @@ void parse_optimization(std::string &optimization) {
 		optimizations.o6 = true;
 	} else if (optimization == "all") {
 		optimizations.o1 = true;
+        optimizations.o2 = true;
 	} else {
 		throw std::invalid_argument("Unknown optimization: " + optimization);
 	}
