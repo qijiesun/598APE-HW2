@@ -40,3 +40,9 @@ silk.rkt
 square.rkt
 silk.png
 square.png
+
+# Flamegraph
+flamegraph.svg
+out.folded
+out.perf
+perf.data

@@ -11,6 +11,7 @@
 #include <program.h>
 #include <random>
 #include <stack>
+#include <flags.h>
 
 namespace genetic {
 
@@ -21,35 +22,83 @@ namespace genetic {
 template <int MaxSize = MAX_STACK_SIZE>
 void execute_kernel(const program_t d_progs, const float *data, float *y_pred,
                     const uint64_t n_rows, const uint64_t n_progs) {
-  for (uint64_t pid = 0; pid < n_progs; ++pid) {
-    for (uint64_t row_id = 0; row_id < n_rows; ++row_id) {
+	if (optimizations.o1) {
+		std::vector<float> columns(MaxSize * n_rows);
+		float *eval_stack[MaxSize];
+		for (int i = 0; i < MaxSize; ++i) {
+			eval_stack[i] = &columns[i * n_rows];
+		}
 
-      stack<float, MaxSize> eval_stack;
-      program_t curr_p = d_progs + pid; // Current program
+		for (uint64_t pid = 0; pid < n_progs; ++pid) {
+			program_t curr_p = d_progs + pid;
+			int end = curr_p->len - 1;
+			node *curr_node = curr_p->nodes + end;
+			int c = 0;
 
-      int end = curr_p->len - 1;
-      node *curr_node = curr_p->nodes + end;
+			while (end >= 0) {
+				if (detail::is_nonterminal(curr_node->t)) {
+					int ar = detail::arity(curr_node->t);
+					float *in0 = eval_stack[--c];
+					float *in1 = nullptr;
+					if (ar > 1) {
+						in1 = eval_stack[--c];
+					}
+					float *res = eval_stack[c++];
+					if (ar == 1) {
+						for (uint64_t row_id = 0; row_id < n_rows; ++row_id) {
+							float in[2] = {in0[row_id], 0.0f};
+							res[row_id] = detail::evaluate_node(*curr_node, data, n_rows, row_id, in);
+						}
+					} else {
+						for (uint64_t row_id = 0; row_id < n_rows; ++row_id) {
+							float in[2] = {in0[row_id], in1[row_id]};
+							res[row_id] = detail::evaluate_node(*curr_node, data, n_rows, row_id, in);
+						}
+					}
+				} else {
+					float *res = eval_stack[c++];
+					float in[2] = {0.0f, 0.0f};
+					for (uint64_t row_id = 0; row_id < n_rows; ++row_id) {
+						res[row_id] = detail::evaluate_node(*curr_node, data, n_rows, row_id, in);
+					}
+				}
+				curr_node--;
+				end--;
+			}
+			float *output = eval_stack[--c];
+			std::copy(output, output + n_rows, y_pred + pid * n_rows);
+		}
+	} else {
+		for (uint64_t pid = 0; pid < n_progs; ++pid) {
+			for (uint64_t row_id = 0; row_id < n_rows; ++row_id) {
 
-      float res = 0.0f;
-      float in[2] = {0.0f, 0.0f};
+				stack<float, MaxSize> eval_stack;
+				program_t curr_p = d_progs + pid; // Current program
 
-      while (end >= 0) {
-        if (detail::is_nonterminal(curr_node->t)) {
-          int ar = detail::arity(curr_node->t);
-          in[0] = eval_stack.pop(); // Min arity of function is 1
-          if (ar > 1)
-            in[1] = eval_stack.pop();
-        }
-        res = detail::evaluate_node(*curr_node, data, n_rows, row_id, in);
-        eval_stack.push(res);
-        curr_node--;
-        end--;
-      }
+				int end = curr_p->len - 1;
+				node *curr_node = curr_p->nodes + end;
 
-      // Outputs stored in col-major format
-      y_pred[pid * n_rows + row_id] = eval_stack.pop();
-    }
-  }
+				float res = 0.0f;
+				float in[2] = {0.0f, 0.0f};
+
+				while (end >= 0) {
+					if (detail::is_nonterminal(curr_node->t)) {
+						int ar = detail::arity(curr_node->t);
+						in[0] = eval_stack.pop(); // Min arity of function is 1
+						if (ar > 1)
+							in[1] = eval_stack.pop();
+					}
+					res = detail::evaluate_node(*curr_node, data, n_rows, row_id, in);
+					eval_stack.push(res);
+					curr_node--;
+					end--;
+				}
+
+				// Outputs stored in col-major format
+				y_pred[pid * n_rows + row_id] = eval_stack.pop();
+			}
+		}
+	}
 }
 
 program::program()

@@ -726,8 +726,10 @@ int main(int argc, char *argv[]) {
 			parse_optimization(optimization);
 		}
 
-		double elapsed = run_test(test);
 		std::cerr << std::fixed << std::setprecision(9);
+		std::cerr << "--------------------------------------------------" << std::endl;
+		std::cerr << "Running test" << std::endl;
+		double elapsed = run_test(test);
 		std::cerr << "--------------------------------------------------" << std::endl;
 		std::cerr << "Time for " << test << ": " << elapsed << " seconds" << std::endl;
 
