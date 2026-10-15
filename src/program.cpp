@@ -187,17 +187,43 @@ program::program(const program &src)
 }
 
 program &program::operator=(const program &src) {
+  if (this == &src)
+    return *this;
+
+  delete[] nodes;
+  nodes = new node[src.len];
+
   len = src.len;
   depth = src.depth;
   raw_fitness_ = src.raw_fitness_;
   metric = src.metric;
   mut_type = src.mut_type;
 
-  // Copy nodes
-  delete[] nodes;
-  nodes = new node[len];
   std::copy(src.nodes, src.nodes + src.len, nodes);
 
+  return *this;
+}
+
+program::program(program &&src) noexcept
+    : nodes(src.nodes), len(src.len), depth(src.depth),
+      raw_fitness_(src.raw_fitness_), metric(src.metric), mut_type(src.mut_type) {
+  src.nodes = nullptr;
+  src.len = 0;
+}
+
+program &program::operator=(program &&src) noexcept {
+  if (this == &src)
+    return *this;
+
+  delete[] nodes;
+  nodes = src.nodes;
+  len = src.len;
+  depth = src.depth;
+  raw_fitness_ = src.raw_fitness_;
+  metric = src.metric;
+  mut_type = src.mut_type;
+  src.nodes = nullptr;
+  src.len = 0;
   return *this;
 }
 
@@ -456,6 +482,7 @@ void build_program(program &p_out, const param &params, PhiloxEngine &rng) {
 
   // Set new program parameters - need to do a copy as
   // nodelist will be deleted using RAII semantics
+  delete[] p_out.nodes;
   p_out.nodes = new node[nodelist.size()];
   std::copy(nodelist.begin(), nodelist.end(), p_out.nodes);
 
@@ -595,6 +622,7 @@ void hoist_mutation(const program &prog, program &p_out, const param &params,
   sub_end += prog_start;
 
   p_out.len = (prog_start) + (sub_end - sub_start) + (prog.len - prog_end);
+  delete[] p_out.nodes;
   p_out.nodes = new node[p_out.len];
   p_out.metric = prog.metric;
 

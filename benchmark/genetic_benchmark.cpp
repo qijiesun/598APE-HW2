@@ -195,16 +195,27 @@ void insertionSortPrograms(genetic::program *programs, int size) {
     }
   }
 
-  // do insertion sort
-  for (int i = 1; i < size; i++) {
-    genetic::program key(programs[i]);
-    int j = i - 1;
-
-    while (j >= 0 && (programs[j].raw_fitness_ > key.raw_fitness_)) {
-      programs[j + 1] = programs[j];
-      j--;
+  // O4 moves AST ownership while sorting instead of repeatedly deep-copying.
+  if (optimizations.o4) {
+    for (int i = 1; i < size; ++i) {
+      genetic::program key(std::move(programs[i]));
+      int j = i - 1;
+      while (j >= 0 && programs[j].raw_fitness_ > key.raw_fitness_) {
+        programs[j + 1] = std::move(programs[j]);
+        --j;
+      }
+      programs[j + 1] = std::move(key);
     }
-    programs[j + 1] = key;
+  } else {
+    for (int i = 1; i < size; ++i) {
+      genetic::program key(programs[i]);
+      int j = i - 1;
+      while (j >= 0 && programs[j].raw_fitness_ > key.raw_fitness_) {
+        programs[j + 1] = programs[j];
+        --j;
+      }
+      programs[j + 1] = key;
+    }
   }
 }
 
