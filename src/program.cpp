@@ -15,6 +15,29 @@
 
 namespace genetic {
 
+template <bool ConstantTime, int MaxSize>
+inline float execute_row(const program_t curr_p, const float *data,
+                         const uint64_t n_rows, const uint64_t row_id) {
+  stack<float, MaxSize, ConstantTime> eval_stack;
+  int end = curr_p->len - 1;
+  node *curr_node = curr_p->nodes + end;
+  float in[2] = {0.0f, 0.0f};
+
+  while (end >= 0) {
+    if (detail::is_nonterminal(curr_node->t)) {
+      const int arity = detail::arity(curr_node->t);
+      in[0] = eval_stack.pop();
+      if (arity > 1)
+        in[1] = eval_stack.pop();
+    }
+    eval_stack.push(
+        detail::evaluate_node(*curr_node, data, n_rows, row_id, in));
+    --curr_node;
+    --end;
+  }
+  return eval_stack.pop();
+}
+
 /**
  * Execution kernel for a single program. We assume that the input data
  * is stored in column major format.
@@ -39,6 +62,17 @@ void execute_kernel(const program_t d_progs, const float *data, float *y_pred,
 					int c = 0;
 
 					while (end >= 0) {
+						if (optimizations.o5) {
+							const int ar = detail::arity(curr_node->t);
+							float *in0 = ar > 0 ? eval_stack[--c] : nullptr;
+							float *in1 = ar > 1 ? eval_stack[--c] : nullptr;
+							float *res = eval_stack[c++];
+							detail::evaluate_node_column(*curr_node, data, n_rows,
+							                             in0, in1, res);
+							curr_node--;
+							end--;
+							continue;
+						}
 						if (detail::is_nonterminal(curr_node->t)) {
 							int ar = detail::arity(curr_node->t);
 							float *in0 = eval_stack[--c];
@@ -86,6 +120,17 @@ void execute_kernel(const program_t d_progs, const float *data, float *y_pred,
 				int c = 0;
 
 				while (end >= 0) {
+					if (optimizations.o5) {
+						const int ar = detail::arity(curr_node->t);
+						float *in0 = ar > 0 ? eval_stack[--c] : nullptr;
+						float *in1 = ar > 1 ? eval_stack[--c] : nullptr;
+						float *res = eval_stack[c++];
+						detail::evaluate_node_column(*curr_node, data, n_rows,
+						                             in0, in1, res);
+						curr_node--;
+						end--;
+						continue;
+					}
 					if (detail::is_nonterminal(curr_node->t)) {
 						int ar = detail::arity(curr_node->t);
 						float *in0 = eval_stack[--c];
@@ -121,65 +166,30 @@ void execute_kernel(const program_t d_progs, const float *data, float *y_pred,
 		}
 	} else {
 		if (optimizations.o2) {
-			#pragma omp parallel for schedule(guided)
-			for (uint64_t pid = 0; pid < n_progs; ++pid) {
-				for (uint64_t row_id = 0; row_id < n_rows; ++row_id) {
-
-					stack<float, MaxSize> eval_stack;
-					program_t curr_p = d_progs + pid; // Current program
-
-					int end = curr_p->len - 1;
-					node *curr_node = curr_p->nodes + end;
-
-					float res = 0.0f;
-					float in[2] = {0.0f, 0.0f};
-
-					while (end >= 0) {
-						if (detail::is_nonterminal(curr_node->t)) {
-							int ar = detail::arity(curr_node->t);
-							in[0] = eval_stack.pop(); // Min arity of function is 1
-							if (ar > 1)
-								in[1] = eval_stack.pop();
-						}
-						res = detail::evaluate_node(*curr_node, data, n_rows, row_id, in);
-						eval_stack.push(res);
-						curr_node--;
-						end--;
-					}
-
-					// Outputs stored in col-major format
-					y_pred[pid * n_rows + row_id] = eval_stack.pop();
-				}
+			if (optimizations.o3) {
+				#pragma omp parallel for schedule(guided)
+				for (uint64_t pid = 0; pid < n_progs; ++pid)
+					for (uint64_t row_id = 0; row_id < n_rows; ++row_id)
+						y_pred[pid * n_rows + row_id] =
+							execute_row<true, MaxSize>(d_progs + pid, data, n_rows, row_id);
+			} else {
+				#pragma omp parallel for schedule(guided)
+				for (uint64_t pid = 0; pid < n_progs; ++pid)
+					for (uint64_t row_id = 0; row_id < n_rows; ++row_id)
+						y_pred[pid * n_rows + row_id] =
+							execute_row<false, MaxSize>(d_progs + pid, data, n_rows, row_id);
 			}
 		} else {
-			for (uint64_t pid = 0; pid < n_progs; ++pid) {
-				for (uint64_t row_id = 0; row_id < n_rows; ++row_id) {
-
-					stack<float, MaxSize> eval_stack;
-					program_t curr_p = d_progs + pid; // Current program
-
-					int end = curr_p->len - 1;
-					node *curr_node = curr_p->nodes + end;
-
-					float res = 0.0f;
-					float in[2] = {0.0f, 0.0f};
-
-					while (end >= 0) {
-						if (detail::is_nonterminal(curr_node->t)) {
-							int ar = detail::arity(curr_node->t);
-							in[0] = eval_stack.pop(); // Min arity of function is 1
-							if (ar > 1)
-								in[1] = eval_stack.pop();
-						}
-						res = detail::evaluate_node(*curr_node, data, n_rows, row_id, in);
-						eval_stack.push(res);
-						curr_node--;
-						end--;
-					}
-
-					// Outputs stored in col-major format
-					y_pred[pid * n_rows + row_id] = eval_stack.pop();
-				}
+			if (optimizations.o3) {
+				for (uint64_t pid = 0; pid < n_progs; ++pid)
+					for (uint64_t row_id = 0; row_id < n_rows; ++row_id)
+						y_pred[pid * n_rows + row_id] =
+							execute_row<true, MaxSize>(d_progs + pid, data, n_rows, row_id);
+			} else {
+				for (uint64_t pid = 0; pid < n_progs; ++pid)
+					for (uint64_t row_id = 0; row_id < n_rows; ++row_id)
+						y_pred[pid * n_rows + row_id] =
+							execute_row<false, MaxSize>(d_progs + pid, data, n_rows, row_id);
 			}
 		}
 	}
@@ -199,17 +209,43 @@ program::program(const program &src)
 }
 
 program &program::operator=(const program &src) {
+  if (this == &src)
+    return *this;
+
+  delete[] nodes;
+  nodes = new node[src.len];
+
   len = src.len;
   depth = src.depth;
   raw_fitness_ = src.raw_fitness_;
   metric = src.metric;
   mut_type = src.mut_type;
 
-  // Copy nodes
-  delete[] nodes;
-  nodes = new node[len];
   std::copy(src.nodes, src.nodes + src.len, nodes);
 
+  return *this;
+}
+
+program::program(program &&src) noexcept
+    : nodes(src.nodes), len(src.len), depth(src.depth),
+      raw_fitness_(src.raw_fitness_), metric(src.metric), mut_type(src.mut_type) {
+  src.nodes = nullptr;
+  src.len = 0;
+}
+
+program &program::operator=(program &&src) noexcept {
+  if (this == &src)
+    return *this;
+
+  delete[] nodes;
+  nodes = src.nodes;
+  len = src.len;
+  depth = src.depth;
+  raw_fitness_ = src.raw_fitness_;
+  metric = src.metric;
+  mut_type = src.mut_type;
+  src.nodes = nullptr;
+  src.len = 0;
   return *this;
 }
 
@@ -468,6 +504,7 @@ void build_program(program &p_out, const param &params, PhiloxEngine &rng) {
 
   // Set new program parameters - need to do a copy as
   // nodelist will be deleted using RAII semantics
+  delete[] p_out.nodes;
   p_out.nodes = new node[nodelist.size()];
   std::copy(nodelist.begin(), nodelist.end(), p_out.nodes);
 
@@ -607,6 +644,7 @@ void hoist_mutation(const program &prog, program &p_out, const param &params,
   sub_end += prog_start;
 
   p_out.len = (prog_start) + (sub_end - sub_start) + (prog.len - prog_end);
+  delete[] p_out.nodes;
   p_out.nodes = new node[p_out.len];
   p_out.metric = prog.metric;
 

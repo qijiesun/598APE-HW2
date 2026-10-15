@@ -1,0 +1,95 @@
+2026-10-14T20:15:53-05:00
+Linux fa26-cs598a-033.cs.illinois.edu 7.0.0-31-generic #31-Ubuntu SMP PREEMPT_DYNAMIC Sat Aug  1 04:26:38 UTC 2026 x86_64 GNU/Linux
+Architecture:                            x86_64
+CPU op-mode(s):                          32-bit, 64-bit
+Address sizes:                           45 bits physical, 48 bits virtual
+Byte Order:                              Little Endian
+CPU(s):                                  4
+On-line CPU(s) list:                     0-3
+Vendor ID:                               GenuineIntel
+Model name:                              Intel(R) Xeon(R) Silver 4216 CPU @ 2.10GHz
+CPU family:                              6
+Model:                                   85
+Thread(s) per core:                      1
+Core(s) per socket:                      4
+Socket(s):                               1
+Stepping:                                7
+BogoMIPS:                                4190.15
+Flags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon nopl xtopology tsc_reliable nonstop_tsc cpuid tsc_known_freq pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch ssbd ibrs ibpb stibp ibrs_enhanced fsgsbase tsc_adjust bmi1 avx2 smep bmi2 invpcid avx512f avx512dq rdseed adx smap clflushopt clwb avx512cd avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves arat pku ospke avx512_vnni md_clear flush_l1d arch_capabilities
+Hypervisor vendor:                       VMware
+Virtualization type:                     full
+L1d cache:                               128 KiB (4 instances)
+L1i cache:                               128 KiB (4 instances)
+L2 cache:                                4 MiB (4 instances)
+L3 cache:                                22 MiB (1 instance)
+NUMA node(s):                            1
+NUMA node0 CPU(s):                       0-3
+Vulnerability Gather data sampling:      Unknown: Dependent on hypervisor status
+Vulnerability Ghostwrite:                Not affected
+Vulnerability Indirect target selection: Mitigation; Aligned branch/return thunks
+Vulnerability Itlb multihit:             KVM: Mitigation: VMX unsupported
+Vulnerability L1tf:                      Not affected
+Vulnerability Mds:                       Not affected
+Vulnerability Meltdown:                  Not affected
+Vulnerability Mmio stale data:           Vulnerable: Clear CPU buffers attempted, no microcode; SMT Host state unknown
+Vulnerability Old microcode:             Not affected
+Vulnerability Reg file data sampling:    Not affected
+Vulnerability Retbleed:                  Mitigation; Enhanced IBRS
+Vulnerability Spec rstack overflow:      Not affected
+Vulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl
+Vulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+Vulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS SW sequence; BHI SW loop, KVM SW loop
+Vulnerability Srbds:                     Not affected
+Vulnerability Tsa:                       Not affected
+Vulnerability Tsx async abort:           Not affected
+Vulnerability Vmscape:                   Not affected
+g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0
+Copyright (C) 2025 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+OMP_NUM_THREADS=4
+87613b6b78af1fd665e839f20bf615665c179c93
+## integration/o1-o4
+ M .clang-format
+ M .gitignore
+ M LICENSE
+ M Makefile
+ M README.md
+ M README_ORIGINAL.md
+ M benchmark/cancer.csv
+ M benchmark/diabetes.csv
+ M benchmark/generate-easy-image.rkt
+ M benchmark/genetic_benchmark.cpp
+ M benchmark/housing.csv
+ M benchmark/prepare_datasets.py
+ M benchmark/silk-ref.rkt
+ M benchmark/square-wave-ref.rkt
+ M docker/Dockerfile
+ M dockerbuild.sh
+ M dockerrun.sh
+ M include/common.h
+ M include/ctimer.h
+ M include/custom_distributions.h
+ M include/fitness.h
+ M include/flags.h
+ M include/genetic.h
+ M include/node.h
+ M include/philox_engine.h
+ M include/philox_rng.h
+ M include/program.h
+ M include/stb_image.h
+ M philox_example.cpp
+ M src/constants.h
+ M src/genetic.cpp
+ M src/node.cpp
+ M src/node_detail.h
+ M src/philox_rng.cpp
+ M src/program.cpp
+ M src/reg_stack.h
+?? build/
+?? mutation_ownership_test.cpp
+?? run_exploratory_o0.sh
+?? run_full_matrix.sh
+?? run_key_benchmarks.sh
+?? stack_boundary_test.cpp

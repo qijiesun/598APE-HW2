@@ -34,6 +34,15 @@
 compile_commands.json
 .cache/
 genetic_benchmark
+build/
+obj/
+gmon.out
+gmon.*
+*.profraw
+*.profdata
+*.log
+*.stdout
+*.stderr
 
 # Outputs
 silk.rkt
@@ -46,3 +55,6 @@ flamegraph.svg
 out.folded
 out.perf
 perf.data
+perf.data.*
+benchmark/results/raw/
+benchmark/results/tmp/

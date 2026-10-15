@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <common.h>
 #include <genetic.h>
+#include <flags.h>
 #include <iostream>
 #include <iomanip>
 #include <limits>
@@ -451,8 +452,12 @@ void symFit(const float *input, const float *labels,
     // Update epochs
     ++params.num_epochs;
 
-    // Update h_currprogs (deepcopy)
-    h_currprogs = h_nextprogs;
+    // O4 exchanges ownership of the generation buffers.  The old generation
+    // then becomes reusable output storage for the following generation.
+    if (optimizations.o4)
+      h_currprogs.swap(h_nextprogs);
+    else
+      h_currprogs = h_nextprogs;
 
     // Update evolution history, depending on the low memory flag
     if (!params.low_memory || gen == 0) {

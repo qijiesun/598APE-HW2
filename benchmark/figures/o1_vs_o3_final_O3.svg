@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="650">
+<rect width="100%" height="100%" fill="white"/>
+<text x="600.0" y="34" text-anchor="middle" font-family="sans-serif" font-size="24">O1-based versus O3-based final configuration (-O3)</text>
+<text transform="translate(24 325.0) rotate(-90)" text-anchor="middle" font-family="sans-serif" font-size="16">Speedup over baseline</text>
+<line x1="90" y1="560.0" x2="1110" y2="560.0" stroke="#dddddd"/><text x="80" y="565.0" text-anchor="end" font-family="sans-serif" font-size="12">0x</text>
+<line x1="90" y1="466.0" x2="1110" y2="466.0" stroke="#dddddd"/><text x="80" y="471.0" text-anchor="end" font-family="sans-serif" font-size="12">6x</text>
+<line x1="90" y1="372.0" x2="1110" y2="372.0" stroke="#dddddd"/><text x="80" y="377.0" text-anchor="end" font-family="sans-serif" font-size="12">12x</text>
+<line x1="90" y1="278.0" x2="1110" y2="278.0" stroke="#dddddd"/><text x="80" y="283.0" text-anchor="end" font-family="sans-serif" font-size="12">18x</text>
+<line x1="90" y1="184.0" x2="1110" y2="184.0" stroke="#dddddd"/><text x="80" y="189.0" text-anchor="end" font-family="sans-serif" font-size="12">25x</text>
+<line x1="90" y1="90.0" x2="1110" y2="90.0" stroke="#dddddd"/><text x="80" y="95.0" text-anchor="end" font-family="sans-serif" font-size="12">31x</text>
+<rect x="141.0" y="140.4" width="43.4" height="419.6" fill="#e41a1c"/><text x="162.4" y="135.4" text-anchor="middle" font-family="sans-serif" font-size="12">27.50x</text>
+<rect x="192.0" y="333.7" width="43.4" height="226.3" fill="#4daf4a"/><text x="213.4" y="328.7" text-anchor="middle" font-family="sans-serif" font-size="12">14.83x</text>
+<text x="192.0" y="584" text-anchor="middle" font-family="sans-serif" font-size="14">diabetes</text>
+<rect x="345.0" y="448.0" width="43.4" height="112.0" fill="#e41a1c"/><text x="366.4" y="443.0" text-anchor="middle" font-family="sans-serif" font-size="12">7.34x</text>
+<rect x="396.0" y="472.9" width="43.4" height="87.1" fill="#4daf4a"/><text x="417.4" y="467.9" text-anchor="middle" font-family="sans-serif" font-size="12">5.71x</text>
+<text x="396.0" y="584" text-anchor="middle" font-family="sans-serif" font-size="14">cancer</text>
+<rect x="549.0" y="295.6" width="43.4" height="264.4" fill="#e41a1c"/><text x="570.4" y="290.6" text-anchor="middle" font-family="sans-serif" font-size="12">17.33x</text>
+<rect x="600.0" y="403.1" width="43.4" height="156.9" fill="#4daf4a"/><text x="621.4" y="398.1" text-anchor="middle" font-family="sans-serif" font-size="12">10.28x</text>
+<text x="600.0" y="584" text-anchor="middle" font-family="sans-serif" font-size="14">housing</text>
+<rect x="753.0" y="421.6" width="43.4" height="138.4" fill="#e41a1c"/><text x="774.4" y="416.6" text-anchor="middle" font-family="sans-serif" font-size="12">9.07x</text>
+<rect x="804.0" y="464.4" width="43.4" height="95.6" fill="#4daf4a"/><text x="825.4" y="459.4" text-anchor="middle" font-family="sans-serif" font-size="12">6.26x</text>
+<text x="804.0" y="584" text-anchor="middle" font-family="sans-serif" font-size="14">silk-wave</text>
+<rect x="957.0" y="402.3" width="43.4" height="157.7" fill="#e41a1c"/><text x="978.4" y="397.3" text-anchor="middle" font-family="sans-serif" font-size="12">10.34x</text>
+<rect x="1008.0" y="457.4" width="43.4" height="102.6" fill="#4daf4a"/><text x="1029.4" y="452.4" text-anchor="middle" font-family="sans-serif" font-size="12">6.72x</text>
+<text x="1008.0" y="584" text-anchor="middle" font-family="sans-serif" font-size="14">square-wave</text>
+<rect x="90" y="608" width="14" height="14" fill="#e41a1c"/><text x="110" y="620" font-family="sans-serif" font-size="13">o1+o2+o4</text>
+<rect x="350" y="608" width="14" height="14" fill="#4daf4a"/><text x="370" y="620" font-family="sans-serif" font-size="13">o2+o3+o4</text>
+</svg>

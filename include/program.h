@@ -49,6 +49,10 @@ struct program {
    */
   program &operator=(const program &src);
 
+  /** Transfer AST ownership without allocating or copying nodes. */
+  program(program &&src) noexcept;
+  program &operator=(program &&src) noexcept;
+
   node *nodes;
   /** total number of nodes in this AST */
   int len;

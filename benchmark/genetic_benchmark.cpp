@@ -195,16 +195,27 @@ void insertionSortPrograms(genetic::program *programs, int size) {
     }
   }
 
-  // do insertion sort
-  for (int i = 1; i < size; i++) {
-    genetic::program key(programs[i]);
-    int j = i - 1;
-
-    while (j >= 0 && (programs[j].raw_fitness_ > key.raw_fitness_)) {
-      programs[j + 1] = programs[j];
-      j--;
+  // O4 moves AST ownership while sorting instead of repeatedly deep-copying.
+  if (optimizations.o4) {
+    for (int i = 1; i < size; ++i) {
+      genetic::program key(std::move(programs[i]));
+      int j = i - 1;
+      while (j >= 0 && programs[j].raw_fitness_ > key.raw_fitness_) {
+        programs[j + 1] = std::move(programs[j]);
+        --j;
+      }
+      programs[j + 1] = std::move(key);
     }
-    programs[j + 1] = key;
+  } else {
+    for (int i = 1; i < size; ++i) {
+      genetic::program key(programs[i]);
+      int j = i - 1;
+      while (j >= 0 && programs[j].raw_fitness_ > key.raw_fitness_) {
+        programs[j + 1] = programs[j];
+        --j;
+      }
+      programs[j + 1] = key;
+    }
   }
 }
 
@@ -662,27 +673,34 @@ struct timespec run_symbolic_reconstruction(const std::string &png_file, int K) 
 	return end_to_end_timer.elapsed;
 }
 
-void parse_optimization(std::string &optimization) {
-	if (optimization == "default") {
-		return;
-	} else if (optimization == "o1") {
-		optimizations.o1 = true;
-	} else if (optimization == "o2") {
-		optimizations.o2 = true;
-	} else if (optimization == "o3") {
-		optimizations.o3 = true;
-	} else if (optimization == "o4") {
-		optimizations.o4 = true;
-	} else if (optimization == "o5") {
-		optimizations.o5 = true;
-	} else if (optimization == "o6") {
-		optimizations.o6 = true;
-	} else if (optimization == "all") {
-		optimizations.o1 = true;
-        optimizations.o2 = true;
-	} else {
-		throw std::invalid_argument("Unknown optimization: " + optimization);
-	}
+void parse_optimization(const std::string &optimization) {
+  optimizations = Flags{};
+  if (optimization == "default" || optimization == "baseline")
+    return;
+  if (optimization == "all") {
+    optimizations.o1 = optimizations.o2 = optimizations.o3 =
+        optimizations.o4 = optimizations.o5 = true;
+    return;
+  }
+
+  std::string normalized = optimization;
+  std::replace(normalized.begin(), normalized.end(), ',', '+');
+  std::stringstream tokens(normalized);
+  std::string token;
+  while (std::getline(tokens, token, '+')) {
+    if (token == "o1")
+      optimizations.o1 = true;
+    else if (token == "o2")
+      optimizations.o2 = true;
+    else if (token == "o3")
+      optimizations.o3 = true;
+    else if (token == "o4")
+      optimizations.o4 = true;
+    else if (token == "o5")
+      optimizations.o5 = true;
+    else
+      throw std::invalid_argument("Unknown optimization token: " + token);
+  }
 }
 
 double run_test(std::string &arg_dset) {
@@ -715,7 +733,8 @@ int main(int argc, char *argv[]) {
     if (argc < 2) {
       throw std::invalid_argument(
           "Usage: genetic_benchmark "
-          "{diabetes|cancer|housing|silk-wave|square-wave} [optimization] [runs]");
+          "{diabetes|cancer|housing|silk-wave|square-wave} "
+          "[baseline|o1[+o2+o3+o4+o5]|all]");
     }
     std::cout << "#lang racket\n";
 
@@ -726,6 +745,11 @@ int main(int argc, char *argv[]) {
 			optimization = argv[2];
 			parse_optimization(optimization);
 		}
+		std::cerr << "Configuration: " << optimization << " (O1="
+		          << optimizations.o1 << ", O2=" << optimizations.o2
+		          << ", O3=" << optimizations.o3 << ", O4="
+		          << optimizations.o4 << ", O5=" << optimizations.o5
+		          << ")" << std::endl;
 
 		std::cerr << std::fixed << std::setprecision(9);
 		std::cerr << "--------------------------------------------------" << std::endl;
