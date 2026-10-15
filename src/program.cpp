@@ -15,6 +15,29 @@
 
 namespace genetic {
 
+template <bool ConstantTime, int MaxSize>
+inline float execute_row(const program_t curr_p, const float *data,
+                         const uint64_t n_rows, const uint64_t row_id) {
+  stack<float, MaxSize, ConstantTime> eval_stack;
+  int end = curr_p->len - 1;
+  node *curr_node = curr_p->nodes + end;
+  float in[2] = {0.0f, 0.0f};
+
+  while (end >= 0) {
+    if (detail::is_nonterminal(curr_node->t)) {
+      const int arity = detail::arity(curr_node->t);
+      in[0] = eval_stack.pop();
+      if (arity > 1)
+        in[1] = eval_stack.pop();
+    }
+    eval_stack.push(
+        detail::evaluate_node(*curr_node, data, n_rows, row_id, in));
+    --curr_node;
+    --end;
+  }
+  return eval_stack.pop();
+}
+
 /**
  * Execution kernel for a single program. We assume that the input data
  * is stored in column major format.
@@ -121,65 +144,30 @@ void execute_kernel(const program_t d_progs, const float *data, float *y_pred,
 		}
 	} else {
 		if (optimizations.o2) {
-			#pragma omp parallel for schedule(guided)
-			for (uint64_t pid = 0; pid < n_progs; ++pid) {
-				for (uint64_t row_id = 0; row_id < n_rows; ++row_id) {
-
-					stack<float, MaxSize> eval_stack;
-					program_t curr_p = d_progs + pid; // Current program
-
-					int end = curr_p->len - 1;
-					node *curr_node = curr_p->nodes + end;
-
-					float res = 0.0f;
-					float in[2] = {0.0f, 0.0f};
-
-					while (end >= 0) {
-						if (detail::is_nonterminal(curr_node->t)) {
-							int ar = detail::arity(curr_node->t);
-							in[0] = eval_stack.pop(); // Min arity of function is 1
-							if (ar > 1)
-								in[1] = eval_stack.pop();
-						}
-						res = detail::evaluate_node(*curr_node, data, n_rows, row_id, in);
-						eval_stack.push(res);
-						curr_node--;
-						end--;
-					}
-
-					// Outputs stored in col-major format
-					y_pred[pid * n_rows + row_id] = eval_stack.pop();
-				}
+			if (optimizations.o3) {
+				#pragma omp parallel for schedule(guided)
+				for (uint64_t pid = 0; pid < n_progs; ++pid)
+					for (uint64_t row_id = 0; row_id < n_rows; ++row_id)
+						y_pred[pid * n_rows + row_id] =
+							execute_row<true, MaxSize>(d_progs + pid, data, n_rows, row_id);
+			} else {
+				#pragma omp parallel for schedule(guided)
+				for (uint64_t pid = 0; pid < n_progs; ++pid)
+					for (uint64_t row_id = 0; row_id < n_rows; ++row_id)
+						y_pred[pid * n_rows + row_id] =
+							execute_row<false, MaxSize>(d_progs + pid, data, n_rows, row_id);
 			}
 		} else {
-			for (uint64_t pid = 0; pid < n_progs; ++pid) {
-				for (uint64_t row_id = 0; row_id < n_rows; ++row_id) {
-
-					stack<float, MaxSize> eval_stack;
-					program_t curr_p = d_progs + pid; // Current program
-
-					int end = curr_p->len - 1;
-					node *curr_node = curr_p->nodes + end;
-
-					float res = 0.0f;
-					float in[2] = {0.0f, 0.0f};
-
-					while (end >= 0) {
-						if (detail::is_nonterminal(curr_node->t)) {
-							int ar = detail::arity(curr_node->t);
-							in[0] = eval_stack.pop(); // Min arity of function is 1
-							if (ar > 1)
-								in[1] = eval_stack.pop();
-						}
-						res = detail::evaluate_node(*curr_node, data, n_rows, row_id, in);
-						eval_stack.push(res);
-						curr_node--;
-						end--;
-					}
-
-					// Outputs stored in col-major format
-					y_pred[pid * n_rows + row_id] = eval_stack.pop();
-				}
+			if (optimizations.o3) {
+				for (uint64_t pid = 0; pid < n_progs; ++pid)
+					for (uint64_t row_id = 0; row_id < n_rows; ++row_id)
+						y_pred[pid * n_rows + row_id] =
+							execute_row<true, MaxSize>(d_progs + pid, data, n_rows, row_id);
+			} else {
+				for (uint64_t pid = 0; pid < n_progs; ++pid)
+					for (uint64_t row_id = 0; row_id < n_rows; ++row_id)
+						y_pred[pid * n_rows + row_id] =
+							execute_row<false, MaxSize>(d_progs + pid, data, n_rows, row_id);
 			}
 		}
 	}
