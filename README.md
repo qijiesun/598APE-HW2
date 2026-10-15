@@ -1,6 +1,6 @@
 # CS598 APE HW2: Symbolic Regression Optimization
 
-This repository contains the course symbolic-regression benchmark and four
+This repository contains the course symbolic-regression benchmark and five
 independently selectable optimizations. It requires a C++17 GCC toolchain,
 GNU Make, OpenMP, and the datasets/images already tracked under `benchmark/`.
 Racket is optional and is needed only to render emitted image models.
@@ -88,10 +88,11 @@ medians for the final O5 comparison were:
 | silk-wave | 9.118888 s | 8.844510 s | 1.031x |
 | square-wave | 25.808260 s | 24.605392 s | 1.049x |
 
-The earlier O1–O4 matrix and O5 median data are tracked under
-`benchmark/results/`; figures are under `benchmark/figures/`. O1 was faster
-than O3 on all five workloads because O1's column-oriented evaluation removes
-the fixed-stack path that O3 accelerates.
+The earlier O1-O4 comparison and the O5 median data are tracked under
+`benchmark/results/`; figures are under `benchmark/figures/`. The O1-based
+configuration was faster than the O3-based configuration on all five workloads
+because O1's column-oriented evaluation removes the fixed-stack path that O3
+accelerates.
 
 To reproduce the O5 comparison:
 
@@ -104,20 +105,19 @@ python3 benchmark/scripts/analyze_o5_results.py \
 
 ## Reproduce the evaluation
 
-From the artifact bundle, copy `reproduction/run_key_benchmarks.sh` into this
-repository or invoke it by absolute path:
+Run the tracked benchmark script from the repository root:
 
 ```bash
-OMP_NUM_THREADS=4 bash run_key_benchmarks.sh "$PWD" "$PWD/results/key_benchmarks"
+OMP_NUM_THREADS=4 bash benchmark/scripts/run_key_benchmarks.sh \
+  "$PWD" "$PWD/results/key_benchmarks"
 ```
 
 The script serially runs the five key configurations (`baseline`, `o1`, `o3`,
 `o1+o2+o4`, and `o2+o3+o4`) across all five workloads at `-O3`, captures
 stdout/stderr plus GNU `time` resource data, and writes `raw_results.csv`. It
 also repeats diabetes three times as a compact variability check. Expensive
-benchmarks are never run concurrently. A separate `run_exploratory_o0.sh`
-script is provided for targeted O1/O3 investigation; it is not part of the
-official result set.
+benchmarks are never run concurrently. Targeted `-O0` measurements are not part
+of the official result set.
 
 For correctness comparisons, remove only the line containing
 `End-to-End` from stdout and compare the remaining output. Timing and resource
@@ -125,7 +125,7 @@ metadata are written to stderr. Sanitizer builds may also report the known
 upstream signed integer overflow at `include/custom_distributions.h:28`; this
 project does not change the random-number generator to hide that warning.
 
-Targeted ownership and stack tests are included in the artifact bundle under
+Targeted ownership, stack-boundary, and O5 node-column tests are tracked under
 `tests/`. Compile them against an ASan build and run with leak detection:
 
 ```bash

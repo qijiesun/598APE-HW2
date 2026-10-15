@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="650">
 <rect width="100%" height="100%" fill="white"/>
-<text x="600" y="32" text-anchor="middle" font-family="sans-serif" font-size="24">O5 median end-to-end runtime reduction</text>
+<text x="600" y="32" text-anchor="middle" font-family="sans-serif" font-size="24">O5 incremental runtime reduction: three-run medians</text>
 <text transform="translate(25 305) rotate(-90)" text-anchor="middle" font-family="sans-serif" font-size="16">Runtime reduction (%)</text>
 <line x1="100" y1="540.0" x2="1130" y2="540.0" stroke="#dddddd"/><text x="90" y="545.0" text-anchor="end" font-family="sans-serif" font-size="12">0.00</text>
 <line x1="100" y1="446.0" x2="1130" y2="446.0" stroke="#dddddd"/><text x="90" y="451.0" text-anchor="end" font-family="sans-serif" font-size="12">3.46</text>
@@ -8,31 +8,20 @@
 <line x1="100" y1="258.0" x2="1130" y2="258.0" stroke="#dddddd"/><text x="90" y="263.0" text-anchor="end" font-family="sans-serif" font-size="12">10.38</text>
 <line x1="100" y1="164.0" x2="1130" y2="164.0" stroke="#dddddd"/><text x="90" y="169.0" text-anchor="end" font-family="sans-serif" font-size="12">13.84</text>
 <line x1="100" y1="70.0" x2="1130" y2="70.0" stroke="#dddddd"/><text x="90" y="75.0" text-anchor="end" font-family="sans-serif" font-size="12">17.30</text>
-<rect x="141.2" y="540.0" width="35.0" height="0.0" fill="#377eb8"/>
-<text x="158.5" y="535.0" text-anchor="middle" font-family="sans-serif" font-size="12">0.000</text>
 <rect x="182.4" y="141.7" width="35.0" height="398.3" fill="#e41a1c"/>
 <text x="199.7" y="136.7" text-anchor="middle" font-family="sans-serif" font-size="12">14.661</text>
 <text x="203.0" y="565" text-anchor="middle" font-family="sans-serif" font-size="14">diabetes</text>
-<rect x="347.2" y="540.0" width="35.0" height="0.0" fill="#377eb8"/>
-<text x="364.5" y="535.0" text-anchor="middle" font-family="sans-serif" font-size="12">0.000</text>
 <rect x="388.4" y="417.1" width="35.0" height="122.9" fill="#e41a1c"/>
 <text x="405.7" y="412.1" text-anchor="middle" font-family="sans-serif" font-size="12">4.525</text>
 <text x="409.0" y="565" text-anchor="middle" font-family="sans-serif" font-size="14">cancer</text>
-<rect x="553.2" y="540.0" width="35.0" height="0.0" fill="#377eb8"/>
-<text x="570.5" y="535.0" text-anchor="middle" font-family="sans-serif" font-size="12">0.000</text>
 <rect x="594.4" y="411.8" width="35.0" height="128.2" fill="#e41a1c"/>
 <text x="611.7" y="406.8" text-anchor="middle" font-family="sans-serif" font-size="12">4.719</text>
 <text x="615.0" y="565" text-anchor="middle" font-family="sans-serif" font-size="14">housing</text>
-<rect x="759.2" y="540.0" width="35.0" height="0.0" fill="#377eb8"/>
-<text x="776.5" y="535.0" text-anchor="middle" font-family="sans-serif" font-size="12">0.000</text>
 <rect x="800.4" y="458.3" width="35.0" height="81.7" fill="#e41a1c"/>
 <text x="817.7" y="453.3" text-anchor="middle" font-family="sans-serif" font-size="12">3.009</text>
 <text x="821.0" y="565" text-anchor="middle" font-family="sans-serif" font-size="14">silk-wave</text>
-<rect x="965.2" y="540.0" width="35.0" height="0.0" fill="#377eb8"/>
-<text x="982.5" y="535.0" text-anchor="middle" font-family="sans-serif" font-size="12">0.000</text>
 <rect x="1006.4" y="413.4" width="35.0" height="126.6" fill="#e41a1c"/>
 <text x="1023.7" y="408.4" text-anchor="middle" font-family="sans-serif" font-size="12">4.661</text>
 <text x="1027.0" y="565" text-anchor="middle" font-family="sans-serif" font-size="14">square-wave</text>
-<rect x="100" y="600" width="15" height="15" fill="#377eb8"/><text x="122" y="613" font-family="sans-serif" font-size="14">o1+o2+o4</text>
-<rect x="400" y="600" width="15" height="15" fill="#e41a1c"/><text x="422" y="613" font-family="sans-serif" font-size="14">o1+o2+o4+o5</text>
+<text x="600" y="613" text-anchor="middle" font-family="sans-serif" font-size="14">Reduction from O1+O2+O4 to O1+O2+O4+O5</text>
 </svg>
