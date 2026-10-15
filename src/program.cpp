@@ -62,6 +62,17 @@ void execute_kernel(const program_t d_progs, const float *data, float *y_pred,
 					int c = 0;
 
 					while (end >= 0) {
+						if (optimizations.o5) {
+							const int ar = detail::arity(curr_node->t);
+							float *in0 = ar > 0 ? eval_stack[--c] : nullptr;
+							float *in1 = ar > 1 ? eval_stack[--c] : nullptr;
+							float *res = eval_stack[c++];
+							detail::evaluate_node_column(*curr_node, data, n_rows,
+							                             in0, in1, res);
+							curr_node--;
+							end--;
+							continue;
+						}
 						if (detail::is_nonterminal(curr_node->t)) {
 							int ar = detail::arity(curr_node->t);
 							float *in0 = eval_stack[--c];
@@ -109,6 +120,17 @@ void execute_kernel(const program_t d_progs, const float *data, float *y_pred,
 				int c = 0;
 
 				while (end >= 0) {
+					if (optimizations.o5) {
+						const int ar = detail::arity(curr_node->t);
+						float *in0 = ar > 0 ? eval_stack[--c] : nullptr;
+						float *in1 = ar > 1 ? eval_stack[--c] : nullptr;
+						float *res = eval_stack[c++];
+						detail::evaluate_node_column(*curr_node, data, n_rows,
+						                             in0, in1, res);
+						curr_node--;
+						end--;
+						continue;
+					}
 					if (detail::is_nonterminal(curr_node->t)) {
 						int ar = detail::arity(curr_node->t);
 						float *in0 = eval_stack[--c];
