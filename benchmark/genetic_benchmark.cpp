@@ -675,32 +675,31 @@ struct timespec run_symbolic_reconstruction(const std::string &png_file, int K) 
 
 void parse_optimization(const std::string &optimization) {
   optimizations = Flags{};
-  if (optimization == "default" || optimization == "baseline")
-    return;
-  if (optimization == "all") {
-    optimizations.o1 = optimizations.o2 = optimizations.o3 =
-        optimizations.o4 = optimizations.o5 = true;
-    return;
-  }
+    if (optimization == "default")
+        return;
+    if (optimization == "all") {
+        optimizations.o1 = optimizations.o2 = optimizations.o3 = optimizations.o4 = optimizations.o5 = true;
+        return;
+    }
 
   std::string normalized = optimization;
   std::replace(normalized.begin(), normalized.end(), ',', '+');
   std::stringstream tokens(normalized);
   std::string token;
-  while (std::getline(tokens, token, '+')) {
-    if (token == "o1")
-      optimizations.o1 = true;
-    else if (token == "o2")
-      optimizations.o2 = true;
-    else if (token == "o3")
-      optimizations.o3 = true;
-    else if (token == "o4")
-      optimizations.o4 = true;
-    else if (token == "o5")
-      optimizations.o5 = true;
-    else
-      throw std::invalid_argument("Unknown optimization token: " + token);
-  }
+    while (std::getline(tokens, token, '+')) {
+        if (token == "o1")
+        optimizations.o1 = true;
+        else if (token == "o2")
+        optimizations.o2 = true;
+        else if (token == "o3")
+        optimizations.o3 = true;
+        else if (token == "o4")
+        optimizations.o4 = true;
+        else if (token == "o5")
+        optimizations.o5 = true;
+        else
+        throw std::invalid_argument("Unknown optimization token: " + token);
+    }
 }
 
 double run_test(std::string &arg_dset) {
@@ -745,11 +744,6 @@ int main(int argc, char *argv[]) {
 			optimization = argv[2];
 			parse_optimization(optimization);
 		}
-		std::cerr << "Configuration: " << optimization << " (O1="
-		          << optimizations.o1 << ", O2=" << optimizations.o2
-		          << ", O3=" << optimizations.o3 << ", O4="
-		          << optimizations.o4 << ", O5=" << optimizations.o5
-		          << ")" << std::endl;
 
 		std::cerr << std::fixed << std::setprecision(9);
 		std::cerr << "--------------------------------------------------" << std::endl;
