@@ -674,18 +674,18 @@ struct timespec run_symbolic_reconstruction(const std::string &png_file, int K) 
 }
 
 void parse_optimization(const std::string &optimization) {
-  optimizations = Flags{};
+    optimizations = Flags{};
     if (optimization == "default")
         return;
     if (optimization == "all") {
-        optimizations.o1 = optimizations.o2 = optimizations.o3 = optimizations.o4 = optimizations.o5 = true;
+        optimizations.o1 = optimizations.o2 = optimizations.o4 = optimizations.o5 = true;
         return;
     }
 
-  std::string normalized = optimization;
-  std::replace(normalized.begin(), normalized.end(), ',', '+');
-  std::stringstream tokens(normalized);
-  std::string token;
+    std::string normalized = optimization;
+    std::replace(normalized.begin(), normalized.end(), ',', '+');
+    std::stringstream tokens(normalized);
+    std::string token;
     while (std::getline(tokens, token, '+')) {
         if (token == "o1")
         optimizations.o1 = true;
